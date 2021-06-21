@@ -1108,6 +1108,8 @@ fn add_sanitizer_libraries(sess: &Session, crate_type: CrateType, linker: &mut d
 
     let sanitizer = sess.opts.debugging_opts.sanitizer;
     if sanitizer.contains(SanitizerSet::ADDRESS) {
+        //linker.args(&["/InferAsanLibs"]);
+        linker.args(&["/SUBSYSTEM:CONSOLE", "/NODEFAULTLIB:library"]);
         link_sanitizer_runtime(sess, linker, "asan");
     }
     if sanitizer.contains(SanitizerSet::LEAK) {
@@ -1155,6 +1157,11 @@ fn link_sanitizer_runtime(sess: &Session, linker: &mut dyn Linker, name: &str) {
         let rpath = path.to_str().expect("non-utf8 component in path");
         linker.args(&["-Wl,-rpath", "-Xlinker", rpath]);
         linker.link_dylib(Symbol::intern(&filename), false, true);
+    }
+    if sess.target.is_like_msvc {
+        let filename = format!("rustc{}_rt.{}.lib", channel, name);
+        let path = find_sanitizer_runtime(&sess, &filename).join(&filename);
+        linker.link_whole_rlib(&path);
     } else {
         let filename = format!("librustc{}_rt.{}.a", channel, name);
         let path = find_sanitizer_runtime(&sess, &filename).join(&filename);

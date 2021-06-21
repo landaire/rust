@@ -794,10 +794,19 @@ fn supported_sanitizers(
     let common_libs = |os: &str, arch: &str, components: &[&str]| -> Vec<SanitizerRuntime> {
         components
             .iter()
-            .map(move |c| SanitizerRuntime {
-                cmake_target: format!("clang_rt.{}-{}", c, arch),
-                path: out_dir.join(&format!("build/lib/{}/libclang_rt.{}-{}.a", os, c, arch)),
-                name: format!("librustc-{}_rt.{}.a", channel, c),
+            .map(move |c| {
+                let path = match os {
+                    "windows" => {
+                        out_dir.join(&format!("build/lib/{}/clang_rt.{}-{}.lib", os, c, arch))
+                    }
+                    _ => out_dir.join(&format!("build/lib/{}/libclang_rt.{}-{}.a", os, c, arch)),
+                };
+                let name = match os {
+                    "windows" => format!("rustc-{}_rt.{}.lib", channel, c),
+                    _ => format!("librustc-{}_rt.{}.a", channel, c),
+                };
+
+                SanitizerRuntime { cmake_target: format!("clang_rt.{}-{}", c, arch), path, name }
             })
             .collect()
     };
@@ -817,6 +826,7 @@ fn supported_sanitizers(
         "x86_64-unknown-linux-musl" => {
             common_libs("linux", "x86_64", &["asan", "lsan", "msan", "tsan"])
         }
+        "x86_64-pc-windows-msvc" => common_libs("windows", "x86_64", &["asan"]),
         _ => Vec::new(),
     }
 }
