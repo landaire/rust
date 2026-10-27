@@ -478,7 +478,7 @@ impl Target {
             Arch::PowerPC64 => {
                 check!(self.llvm_floatabi.is_none(), "`llvm_floatabi` is unused on PowerPC64");
                 check!(self.rustc_abi.is_none(), "`rustc_abi` is unused on PowerPC64");
-                // PowerPC64 targets that are not AIX must set their ABI to either ELFv1 or ELFv2
+                // PowerPC64 targets other than AIX and Xbox 360 must select ELFv1 or ELFv2.
                 if self.os == Os::Aix {
                     // FIXME: Check that `target_abi` matches the actually configured ABI
                     // (vec-default vs vec-ext).
@@ -486,6 +486,16 @@ impl Target {
                         (&self.llvm_abiname, &self.cfg_abi),
                         (LlvmAbi::Unspecified, CfgAbi::VecDefault | CfgAbi::VecExtAbi),
                         "invalid PowerPC64 AIX ABI name and `cfg(target_abi)` combination:\n\
+                        ABI name: {}\n\
+                        cfg(target_abi): {}",
+                        self.llvm_abiname,
+                        self.cfg_abi,
+                    );
+                } else if self.os == Os::Xbox360 {
+                    check_matches!(
+                        (&self.llvm_abiname, &self.cfg_abi),
+                        (LlvmAbi::Unspecified, CfgAbi::Unspecified),
+                        "invalid PowerPC64 Xbox 360 ABI name and `cfg(target_abi)` combination:\n\
                         ABI name: {}\n\
                         cfg(target_abi): {}",
                         self.llvm_abiname,

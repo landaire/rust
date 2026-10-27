@@ -1879,6 +1879,7 @@ crate::target_spec_enum! {
         Wasi = "wasi",
         WatchOs = "watchos",
         Windows = "windows",
+        Xbox360 = "xbox360",
         Xous = "xous",
         Zkvm = "zkvm",
         Unknown = "unknown",
@@ -3047,7 +3048,14 @@ impl Target {
                 None,
             ),
             Arch::PowerPC => (Architecture::PowerPc, None),
-            Arch::PowerPC64 => (Architecture::PowerPc64, None),
+            Arch::PowerPC64 => (
+                if self.pointer_width == 32 {
+                    Architecture::PowerPc
+                } else {
+                    Architecture::PowerPc64
+                },
+                None,
+            ),
             Arch::RiscV32 => (Architecture::Riscv32, None),
             Arch::RiscV64 => (Architecture::Riscv64, None),
             Arch::Sparc => {

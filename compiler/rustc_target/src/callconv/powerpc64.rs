@@ -2,16 +2,17 @@
 // Alignment of 128 bit types is not currently handled, this will
 // need to be fixed when PowerPC vector support is added.
 
-use rustc_abi::{HasDataLayout, TyAbiInterface};
+use rustc_abi::{BackendRepr, Float, HasDataLayout, Primitive, TyAbiInterface};
 
-use crate::callconv::{Align, ArgAbi, FnAbi, Reg, RegKind, Uniform};
+use crate::callconv::{Align, ArgAbi, ArgExtension, FnAbi, PassMode, Reg, RegKind, Uniform};
 use crate::spec::{HasTargetSpec, LlvmAbi, Os};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum ABI {
-    ELFv1, // original ABI used for powerpc64 (big-endian)
-    ELFv2, // newer ABI used for powerpc64le and musl (both endians)
-    AIX,   // used by AIX OS, big-endian only
+    ELFv1,   // original ABI used for powerpc64 (big-endian)
+    ELFv2,   // newer ABI used for powerpc64le and musl (both endians)
+    AIX,     // used by AIX OS, big-endian only
+    Xbox360, // Xbox 360's PPC64 ILP32 ABI
 }
 use ABI::*;
 
@@ -43,6 +44,36 @@ where
     })
 }
 
+/// Whether cl.exe's struct rules apply. 16-byte vectors of f32 or of integers up to 32 bits go in
+/// v1-v13 (returns in v1); clang passes other vectors like structs of the same size.
+fn is_xbox360_aggregate<'a, Ty>(arg: &ArgAbi<'a, Ty>) -> bool {
+    match arg.layout.backend_repr {
+        BackendRepr::SimdVector { element, .. } => {
+            arg.layout.size.bytes() != 16
+                || !match element.primitive() {
+                    Primitive::Float(Float::F32) => true,
+                    Primitive::Int(int, _) => int.size().bytes() <= 4,
+                    _ => false,
+                }
+        }
+        _ => arg.layout.is_aggregate(),
+    }
+}
+
+/// cl.exe passes structs by size only: 1/2/4 bytes right-justified like integers, 3 and 5-8
+/// bytes left-justified in a GPR, larger ones in memory. Only 1/2/4/8 bytes return in r3.
+fn classify_xbox360_aggregate<'a, Ty>(arg: &mut ArgAbi<'a, Ty>, is_ret: bool) {
+    let size = arg.layout.size;
+    match size.bytes() {
+        1 | 2 | 4 => arg.cast_to(Reg { kind: RegKind::Integer, size }),
+        8 => arg.cast_to(Reg::i64()),
+        _ if is_ret => arg.make_indirect(),
+        // An i64 holds the bytes from its most significant end on big-endian.
+        3 | 5..=7 => arg.cast_to(Reg::i64()),
+        _ => arg.pass_by_stack_offset(None),
+    }
+}
+
 fn classify<'a, Ty, C>(cx: &C, arg: &mut ArgAbi<'a, Ty>, abi: ABI, is_ret: bool)
 where
     Ty: TyAbiInterface<'a, C> + Copy,
@@ -54,6 +85,18 @@ where
     }
     if !is_ret && arg.layout.pass_indirectly_in_non_rustic_abis(cx) {
         arg.make_indirect();
+        return;
+    }
+    // ILP32 defines the data model, not these Xbox-specific calling-convention rules.
+    if abi == Xbox360 {
+        if is_xbox360_aggregate(arg) {
+            classify_xbox360_aggregate(arg, is_ret);
+        } else if let PassMode::Direct(attrs) = &mut arg.mode
+            && let BackendRepr::Scalar(scalar) = arg.layout.backend_repr
+            && scalar.is_bool()
+        {
+            attrs.ext(ArgExtension::Zext);
+        }
         return;
     }
     if !arg.layout.is_aggregate() {
@@ -110,8 +153,8 @@ where
         LlvmAbi::ElfV1 => ELFv1,
         LlvmAbi::ElfV2 => ELFv2,
         LlvmAbi::Unspecified if cx.target_spec().os == Os::Aix => AIX,
-        // Target::check_consistency enforces that every target except AIX
-        // sets llvm_abiname to either ElfV1 or ElfV2
+        LlvmAbi::Unspecified if cx.target_spec().os == Os::Xbox360 => Xbox360,
+        // Target::check_consistency enforces the valid ABI combinations.
         _ => unreachable!(),
     };
 
