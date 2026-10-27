@@ -660,6 +660,7 @@ fn human_readable_target_os(os: Symbol) -> Option<&'static str> {
         Wasi => "WASI",
         WatchOs => "watchOS",
         Windows => "Windows",
+        Xbox360 => "Xbox 360",
         Xous => "Xous",
         Zkvm => "zero knowledge Virtual Machine",
         // tidy-alphabetical-end

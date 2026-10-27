@@ -2019,6 +2019,7 @@ crate::target_spec_enum! {
         Wasi = "wasi",
         WatchOs = "watchos",
         Windows = "windows",
+        Xbox360 = "xbox360",
         Xous = "xous",
         Zkvm = "zkvm",
         Unknown = "unknown",
@@ -3458,8 +3459,19 @@ impl Target {
             Arch::PowerPC64 => {
                 check!(self.llvm_floatabi.is_none(), "`llvm_floatabi` is unused on PowerPC64");
                 check!(self.rustc_abi.is_none(), "`rustc_abi` is unused on PowerPC64");
-                // PowerPC64 targets that are not AIX must set their ABI to either ELFv1 or ELFv2
-                if self.os == Os::Aix {
+                // PowerPC64 targets that are not Xbox 360 or AIX must set
+                // their ABI to either ELFv1 or ELFv2.
+                if self.os == Os::Xbox360 {
+                    check_matches!(
+                        (&self.llvm_abiname, &self.cfg_abi),
+                        (LlvmAbi::Unspecified, CfgAbi::Unspecified | CfgAbi::Other(_)),
+                        "invalid PowerPC64 Xbox 360 ABI name and `cfg(target_abi)` combination:\n\
+                        ABI name: {}\n\
+                        cfg(target_abi): {}",
+                        self.llvm_abiname,
+                        self.cfg_abi,
+                    );
+                } else if self.os == Os::Aix {
                     // FIXME: Check that `target_abi` matches the actually configured ABI
                     // (vec-default vs vec-ext).
                     check_matches!(
@@ -3839,7 +3851,14 @@ impl Target {
                 None,
             ),
             Arch::PowerPC => (Architecture::PowerPc, None),
-            Arch::PowerPC64 => (Architecture::PowerPc64, None),
+            Arch::PowerPC64 => (
+                if self.pointer_width == 32 {
+                    Architecture::PowerPc
+                } else {
+                    Architecture::PowerPc64
+                },
+                None,
+            ),
             Arch::RiscV32 => (Architecture::Riscv32, None),
             Arch::RiscV64 => (Architecture::Riscv64, None),
             Arch::Sparc => {
