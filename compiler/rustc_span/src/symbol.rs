@@ -2356,6 +2356,7 @@ symbols! {
         view_types,
         vis,
         visible_private_types,
+        vmx128,
         volatile,
         volatile_copy_memory,
         volatile_copy_nonoverlapping_memory,

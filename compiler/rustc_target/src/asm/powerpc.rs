@@ -1,7 +1,7 @@
 use std::fmt;
 
 use rustc_data_structures::fx::FxIndexSet;
-use rustc_span::Symbol;
+use rustc_span::{Symbol, sym};
 
 use super::{InlineAsmArch, InlineAsmType, ModifierInfo};
 use crate::spec::{CfgAbi, RelocModel, RustcAbi, Target};
@@ -129,6 +129,20 @@ fn spe_acc_target_check(
     if is_spe(target) { Ok(()) } else { Err("spe_acc is only available on spe targets") }
 }
 
+fn vmx128_target_check(
+    _arch: InlineAsmArch,
+    _reloc_model: RelocModel,
+    target_features: &FxIndexSet<Symbol>,
+    _target: &Target,
+    is_clobber: bool,
+) -> Result<(), &'static str> {
+    if is_clobber || target_features.contains(&sym::vmx128) {
+        Ok(())
+    } else {
+        Err("v32-v127 require the vmx128 target feature")
+    }
+}
+
 def_regs! {
     PowerPC PowerPCInlineAsmReg PowerPCInlineAsmRegClass {
         r0: reg = ["r0", "0"],
@@ -223,6 +237,102 @@ def_regs! {
         v29: vreg = ["v29"] % reserved_v20to31,
         v30: vreg = ["v30"] % reserved_v20to31,
         v31: vreg = ["v31"] % reserved_v20to31,
+        v32: vreg = ["v32"] % vmx128_target_check,
+        v33: vreg = ["v33"] % vmx128_target_check,
+        v34: vreg = ["v34"] % vmx128_target_check,
+        v35: vreg = ["v35"] % vmx128_target_check,
+        v36: vreg = ["v36"] % vmx128_target_check,
+        v37: vreg = ["v37"] % vmx128_target_check,
+        v38: vreg = ["v38"] % vmx128_target_check,
+        v39: vreg = ["v39"] % vmx128_target_check,
+        v40: vreg = ["v40"] % vmx128_target_check,
+        v41: vreg = ["v41"] % vmx128_target_check,
+        v42: vreg = ["v42"] % vmx128_target_check,
+        v43: vreg = ["v43"] % vmx128_target_check,
+        v44: vreg = ["v44"] % vmx128_target_check,
+        v45: vreg = ["v45"] % vmx128_target_check,
+        v46: vreg = ["v46"] % vmx128_target_check,
+        v47: vreg = ["v47"] % vmx128_target_check,
+        v48: vreg = ["v48"] % vmx128_target_check,
+        v49: vreg = ["v49"] % vmx128_target_check,
+        v50: vreg = ["v50"] % vmx128_target_check,
+        v51: vreg = ["v51"] % vmx128_target_check,
+        v52: vreg = ["v52"] % vmx128_target_check,
+        v53: vreg = ["v53"] % vmx128_target_check,
+        v54: vreg = ["v54"] % vmx128_target_check,
+        v55: vreg = ["v55"] % vmx128_target_check,
+        v56: vreg = ["v56"] % vmx128_target_check,
+        v57: vreg = ["v57"] % vmx128_target_check,
+        v58: vreg = ["v58"] % vmx128_target_check,
+        v59: vreg = ["v59"] % vmx128_target_check,
+        v60: vreg = ["v60"] % vmx128_target_check,
+        v61: vreg = ["v61"] % vmx128_target_check,
+        v62: vreg = ["v62"] % vmx128_target_check,
+        v63: vreg = ["v63"] % vmx128_target_check,
+        v64: vreg = ["v64"] % vmx128_target_check,
+        v65: vreg = ["v65"] % vmx128_target_check,
+        v66: vreg = ["v66"] % vmx128_target_check,
+        v67: vreg = ["v67"] % vmx128_target_check,
+        v68: vreg = ["v68"] % vmx128_target_check,
+        v69: vreg = ["v69"] % vmx128_target_check,
+        v70: vreg = ["v70"] % vmx128_target_check,
+        v71: vreg = ["v71"] % vmx128_target_check,
+        v72: vreg = ["v72"] % vmx128_target_check,
+        v73: vreg = ["v73"] % vmx128_target_check,
+        v74: vreg = ["v74"] % vmx128_target_check,
+        v75: vreg = ["v75"] % vmx128_target_check,
+        v76: vreg = ["v76"] % vmx128_target_check,
+        v77: vreg = ["v77"] % vmx128_target_check,
+        v78: vreg = ["v78"] % vmx128_target_check,
+        v79: vreg = ["v79"] % vmx128_target_check,
+        v80: vreg = ["v80"] % vmx128_target_check,
+        v81: vreg = ["v81"] % vmx128_target_check,
+        v82: vreg = ["v82"] % vmx128_target_check,
+        v83: vreg = ["v83"] % vmx128_target_check,
+        v84: vreg = ["v84"] % vmx128_target_check,
+        v85: vreg = ["v85"] % vmx128_target_check,
+        v86: vreg = ["v86"] % vmx128_target_check,
+        v87: vreg = ["v87"] % vmx128_target_check,
+        v88: vreg = ["v88"] % vmx128_target_check,
+        v89: vreg = ["v89"] % vmx128_target_check,
+        v90: vreg = ["v90"] % vmx128_target_check,
+        v91: vreg = ["v91"] % vmx128_target_check,
+        v92: vreg = ["v92"] % vmx128_target_check,
+        v93: vreg = ["v93"] % vmx128_target_check,
+        v94: vreg = ["v94"] % vmx128_target_check,
+        v95: vreg = ["v95"] % vmx128_target_check,
+        v96: vreg = ["v96"] % vmx128_target_check,
+        v97: vreg = ["v97"] % vmx128_target_check,
+        v98: vreg = ["v98"] % vmx128_target_check,
+        v99: vreg = ["v99"] % vmx128_target_check,
+        v100: vreg = ["v100"] % vmx128_target_check,
+        v101: vreg = ["v101"] % vmx128_target_check,
+        v102: vreg = ["v102"] % vmx128_target_check,
+        v103: vreg = ["v103"] % vmx128_target_check,
+        v104: vreg = ["v104"] % vmx128_target_check,
+        v105: vreg = ["v105"] % vmx128_target_check,
+        v106: vreg = ["v106"] % vmx128_target_check,
+        v107: vreg = ["v107"] % vmx128_target_check,
+        v108: vreg = ["v108"] % vmx128_target_check,
+        v109: vreg = ["v109"] % vmx128_target_check,
+        v110: vreg = ["v110"] % vmx128_target_check,
+        v111: vreg = ["v111"] % vmx128_target_check,
+        v112: vreg = ["v112"] % vmx128_target_check,
+        v113: vreg = ["v113"] % vmx128_target_check,
+        v114: vreg = ["v114"] % vmx128_target_check,
+        v115: vreg = ["v115"] % vmx128_target_check,
+        v116: vreg = ["v116"] % vmx128_target_check,
+        v117: vreg = ["v117"] % vmx128_target_check,
+        v118: vreg = ["v118"] % vmx128_target_check,
+        v119: vreg = ["v119"] % vmx128_target_check,
+        v120: vreg = ["v120"] % vmx128_target_check,
+        v121: vreg = ["v121"] % vmx128_target_check,
+        v122: vreg = ["v122"] % vmx128_target_check,
+        v123: vreg = ["v123"] % vmx128_target_check,
+        v124: vreg = ["v124"] % vmx128_target_check,
+        v125: vreg = ["v125"] % vmx128_target_check,
+        v126: vreg = ["v126"] % vmx128_target_check,
+        v127: vreg = ["v127"] % vmx128_target_check,
         vs0: vsreg = ["vs0"],
         vs1: vsreg = ["vs1"],
         vs2: vsreg = ["vs2"],
@@ -315,6 +425,10 @@ def_regs! {
 }
 
 impl PowerPCInlineAsmReg {
+    pub fn requires_vmx128(self) -> bool {
+        self >= Self::v32 && self <= Self::v127
+    }
+
     pub fn emit(
         self,
         out: &mut dyn fmt::Write,
@@ -344,6 +458,18 @@ impl PowerPCInlineAsmReg {
             (v8, "8"), (v9, "9"), (v10, "10"), (v11, "11"), (v12, "12"), (v13, "13"), (v14, "14"), (v15, "15");
             (v16, "16"), (v17, "17"), (v18, "18"), (v19, "19"), (v20, "20"), (v21, "21"), (v22, "22"), (v23, "23");
             (v24, "24"), (v25, "25"), (v26, "26"), (v27, "27"), (v28, "28"), (v29, "29"), (v30, "30"), (v31, "31");
+            (v32, "32"), (v33, "33"), (v34, "34"), (v35, "35"), (v36, "36"), (v37, "37"), (v38, "38"), (v39, "39");
+            (v40, "40"), (v41, "41"), (v42, "42"), (v43, "43"), (v44, "44"), (v45, "45"), (v46, "46"), (v47, "47");
+            (v48, "48"), (v49, "49"), (v50, "50"), (v51, "51"), (v52, "52"), (v53, "53"), (v54, "54"), (v55, "55");
+            (v56, "56"), (v57, "57"), (v58, "58"), (v59, "59"), (v60, "60"), (v61, "61"), (v62, "62"), (v63, "63");
+            (v64, "64"), (v65, "65"), (v66, "66"), (v67, "67"), (v68, "68"), (v69, "69"), (v70, "70"), (v71, "71");
+            (v72, "72"), (v73, "73"), (v74, "74"), (v75, "75"), (v76, "76"), (v77, "77"), (v78, "78"), (v79, "79");
+            (v80, "80"), (v81, "81"), (v82, "82"), (v83, "83"), (v84, "84"), (v85, "85"), (v86, "86"), (v87, "87");
+            (v88, "88"), (v89, "89"), (v90, "90"), (v91, "91"), (v92, "92"), (v93, "93"), (v94, "94"), (v95, "95");
+            (v96, "96"), (v97, "97"), (v98, "98"), (v99, "99"), (v100, "100"), (v101, "101"), (v102, "102"), (v103, "103");
+            (v104, "104"), (v105, "105"), (v106, "106"), (v107, "107"), (v108, "108"), (v109, "109"), (v110, "110"), (v111, "111");
+            (v112, "112"), (v113, "113"), (v114, "114"), (v115, "115"), (v116, "116"), (v117, "117"), (v118, "118"), (v119, "119");
+            (v120, "120"), (v121, "121"), (v122, "122"), (v123, "123"), (v124, "124"), (v125, "125"), (v126, "126"), (v127, "127");
             (vs0, "0"), (vs1, "1"), (vs2, "2"), (vs3, "3"), (vs4, "4"), (vs5, "5"), (vs6, "6"), (vs7, "7"),
             (vs8, "8"), (vs9, "9"), (vs10, "10"), (vs11, "11"), (vs12, "12"), (vs13, "13"), (vs14, "14"),
             (vs15, "15"), (vs16, "16"), (vs17, "17"), (vs18, "18"), (vs19, "19"), (vs20, "20"), (vs21, "21"),
