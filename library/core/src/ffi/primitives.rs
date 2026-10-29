@@ -102,6 +102,8 @@ mod c_char_definition {
         // Vita:
         //   Chars are signed by default on the Vita, and VITASDK follows that convention.
         //   https://github.com/vitasdk/buildscripts/blob/09c533b771591ecde88864b6acad28ffb688dbd4/patches/gcc/0001-gcc-10.patch#L33-L34
+        // Xbox 360:
+        //   The console compiler (cl.exe) treats char as signed, as on Windows.
         //
         // L4Re:
         //   The kernel builds with -funsigned-char on all targets (but userspace follows the
@@ -112,6 +114,7 @@ mod c_char_definition {
             not(windows),
             not(target_vendor = "apple"),
             not(target_os = "vita"),
+            not(target_os = "xbox360"),
             any(
                 target_arch = "aarch64",
                 target_arch = "arm",
