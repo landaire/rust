@@ -110,7 +110,24 @@ LLVMRustCreateMCSubtargetInfo(const char *TripleStr, const char *CPU,
 extern "C" bool LLVMRustMCSubtargetInfoCheckFeatures(MCSubtargetInfo *MCInfo,
                                                      const char *Features,
                                                      size_t FeaturesLen) {
-  return MCInfo->checkFeatures(StringRef{Features, FeaturesLen});
+  StringRef FS{Features, FeaturesLen};
+  // checkFeatures aborts on a feature the linked LLVM does not define, such as
+  // vmx128 without the Xbox 360 LLVM patches. Report such a feature as absent.
+  ArrayRef<SubtargetFeatureKV> Known = MCInfo->getAllProcessorFeatures();
+  SubtargetFeatures Requested(FS);
+  for (const std::string &F : Requested.getFeatures()) {
+    StringRef Name = SubtargetFeatures::StripFlag(F);
+    auto IsName = [&](const SubtargetFeatureKV &KV) {
+#if LLVM_VERSION_GE(23, 0)
+      return Name == KV.key();
+#else
+      return Name == KV.Key;
+#endif
+    };
+    if (none_of(Known, IsName))
+      return false;
+  }
+  return MCInfo->checkFeatures(FS);
 }
 
 extern "C" void LLVMRustDisposeMCSubtargetInfo(MCSubtargetInfo *MCInfo) {
