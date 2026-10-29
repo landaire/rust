@@ -618,6 +618,7 @@ static POWERPC_FEATURES: &[(&str, Stability, ImpliedFeatures)] = &[
         InternalOnly { reason: "unsupported ABI-configuration feature", hard_error: false },
         &[],
     ),
+    ("vmx128", Unstable(sym::powerpc_target_feature), &["altivec"]),
     ("vsx", Unstable(sym::powerpc_target_feature), &["altivec"]),
     // tidy-alphabetical-end
 ];
