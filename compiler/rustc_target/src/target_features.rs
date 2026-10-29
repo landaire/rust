@@ -592,6 +592,7 @@ static POWERPC_FEATURES: &[(&str, Stability, ImpliedFeatures)] = &[
     ("power10-vector", Unstable(sym::powerpc_target_feature), &["power9-vector"]),
     ("quadword-atomics", Unstable(sym::powerpc_target_feature), &[]),
     ("spe", Forbidden { reason: "unsupported ABI-configuration feature", hard_error: false }, &[]),
+    ("vmx128", Unstable(sym::powerpc_target_feature), &["altivec"]),
     ("vsx", Unstable(sym::powerpc_target_feature), &["altivec"]),
     // tidy-alphabetical-end
 ];

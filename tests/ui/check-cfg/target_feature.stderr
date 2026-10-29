@@ -408,6 +408,7 @@ LL |     cfg!(target_feature = "_UNEXPECTED_VALUE");
 `vh`
 `virt`
 `virtualization`
+`vmx128`
 `vpclmulqdq`
 `vsx`
 `wfxt`
