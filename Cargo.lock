@@ -3510,7 +3510,6 @@ checksum = "bfe6f213fb658c8fb95baabd5420393438cf5a98d707f5dd701d9197c705f71e"
 name = "rustc-main"
 version = "0.0.0"
 dependencies = [
- "getrandom 0.3.3",
  "rustc_codegen_ssa",
  "rustc_driver",
  "rustc_driver_impl",
@@ -3518,7 +3517,6 @@ dependencies = [
  "rustc_public_bridge",
  "rustc_windows_rc",
  "tikv-jemalloc-sys",
- "wasi 0.14.2+wasi-0.2.4",
 ]
 
 [[package]]

@@ -42,8 +42,16 @@ impl<'ll, 'tcx> AsmBuilderMethods<'tcx> for Builder<'_, 'll, 'tcx> {
         for (idx, op) in operands.iter().enumerate() {
             match *op {
                 InlineAsmOperandRef::Out { reg, late, place } => {
-                    let is_target_supported = |reg_class: InlineAsmRegClass| {
-                        for &(_, feature) in reg_class.supported_types(asm_arch, true).as_ref() {
+                    let is_target_supported = |reg: InlineAsmRegOrRegClass| {
+                        if let InlineAsmRegOrRegClass::Reg(InlineAsmReg::PowerPC(reg)) = reg
+                            && reg.requires_vmx128()
+                        {
+                            return self
+                                .tcx
+                                .asm_target_features(instance.def_id())
+                                .contains(&sym::vmx128);
+                        }
+                        for &(_, feature) in reg.reg_class().supported_types(asm_arch, true).as_ref() {
                             if let Some(feature) = feature {
                                 if self
                                     .tcx
@@ -82,7 +90,7 @@ impl<'ll, 'tcx> AsmBuilderMethods<'tcx> for Builder<'_, 'll, 'tcx> {
                             }
                         }
                         continue;
-                    } else if !is_target_supported(reg.reg_class())
+                    } else if !is_target_supported(reg)
                         || reg.reg_class().is_clobber_only(asm_arch, true)
                     {
                         // We turn discarded outputs into clobber constraints

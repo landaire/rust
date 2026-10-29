@@ -6,7 +6,7 @@ use rustc_data_structures::fx::{FxHashMap, FxIndexSet};
 use rustc_macros::{Decodable, Encodable, StableHash};
 use rustc_span::Symbol;
 
-use crate::spec::{Arch, RelocModel, Target};
+use crate::spec::{Arch, Os, RelocModel, Target};
 
 pub struct ModifierInfo {
     pub modifier: char,
@@ -986,6 +986,7 @@ pub enum InlineAsmClobberAbi {
     LoongArch,
     PowerPC,
     PowerPCSPE,
+    PowerPCXbox360,
     S390x,
     Bpf,
     Msp430,
@@ -1053,6 +1054,8 @@ impl InlineAsmClobberAbi {
             InlineAsmArch::PowerPC | InlineAsmArch::PowerPC64 => match name {
                 "C" | "system" => Ok(if powerpc::is_spe(target) {
                     InlineAsmClobberAbi::PowerPCSPE
+                } else if arch == InlineAsmArch::PowerPC64 && target.os == Os::Xbox360 {
+                    InlineAsmClobberAbi::PowerPCXbox360
                 } else {
                     InlineAsmClobberAbi::PowerPC
                 }),
@@ -1330,6 +1333,23 @@ impl InlineAsmClobberAbi {
                     ctr,
                     lr,
                     xer,
+                }
+            },
+            InlineAsmClobberAbi::PowerPCXbox360 => clobbered_regs! {
+                PowerPC PowerPCInlineAsmReg {
+                    r0,
+                    r3, r4, r5, r6, r7, r8, r9, r10, r11, r12,
+                    f0, f1, f2, f3, f4, f5, f6, f7,
+                    f8, f9, f10, f11, f12, f13,
+                    v0, v1, v2, v3, v4, v5, v6, v7,
+                    v8, v9, v10, v11, v12, v13, v14, v15,
+                    v16, v17, v18, v19, v20, v21, v22, v23,
+                    v24, v25, v26, v27, v28, v29, v30, v31,
+                    v32, v33, v34, v35, v36, v37, v38, v39,
+                    v40, v41, v42, v43, v44, v45, v46, v47,
+                    v48, v49, v50, v51, v52, v53, v54, v55,
+                    v56, v57, v58, v59, v60, v61, v62, v63,
+                    cr0, cr1, cr5, cr6, cr7, ctr, lr, xer,
                 }
             },
             InlineAsmClobberAbi::PowerPCSPE => clobbered_regs! {
